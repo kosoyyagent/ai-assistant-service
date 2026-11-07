@@ -2,8 +2,9 @@
 
 A small self-hosted web service that gives each user their own AI assistant —
 a private chat with per-user history and context, an admin panel for
-managing accounts, and pluggable LLM backends (Yandex AI Studio / Alice AI
-out of the box, easy to point at OpenAI-compatible APIs).
+managing accounts, and pluggable LLM backends — any OpenAI-compatible API
+(OpenAI, OpenRouter, DeepSeek, Ollama, vLLM) or Yandex AI Studio / Alice AI
+out of the box.
 
 Built for companies that want an internal ChatGPT-like tool where user
 accounts are managed centrally instead of everyone using their personal
@@ -36,8 +37,12 @@ Default admin: `admin` / `admin123` — change via `ADMIN_PASSWORD` env var
 
 Copy `.env.example` to `.env` or export the variables:
 
+- `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL` — any
+  OpenAI-compatible chat API (takes precedence). Point `OPENAI_BASE_URL` at
+  OpenRouter, DeepSeek, or a local Ollama/vLLM endpoint.
 - `YANDEX_API_KEY`, `YANDEX_FOLDER_ID`, `YANDEX_MODEL` — Yandex AI Studio
-  credentials. Leave empty to run the built-in echo mode.
+  credentials (used when OpenAI vars are not set).
+- Leave all model keys empty to run the built-in echo mode.
 - `ADMIN_PASSWORD` — initial admin password (first run only).
 - `SECRET_KEY` — Flask session key.
 - `SYSTEM_PROMPT` — assistant persona.

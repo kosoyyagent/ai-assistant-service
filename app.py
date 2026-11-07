@@ -23,6 +23,11 @@ DB = os.path.join(APP_DIR, 'assist.db')
 YANDEX_API_KEY  = os.environ.get('YANDEX_API_KEY', '')
 YANDEX_FOLDER   = os.environ.get('YANDEX_FOLDER_ID', '')
 YANDEX_MODEL    = os.environ.get('YANDEX_MODEL', 'aliceai-llm')
+# OpenAI-compatible backend (takes precedence when OPENAI_API_KEY is set):
+# works with api.openai.com, OpenRouter, DeepSeek, local Ollama/vLLM, etc.
+OPENAI_BASE_URL = os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1')
+OPENAI_API_KEY  = os.environ.get('OPENAI_API_KEY', '')
+OPENAI_MODEL    = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
 SYSTEM_PROMPT   = os.environ.get('SYSTEM_PROMPT',
     'Ты — вежливый персональный ассистент компании. Отвечай коротко и по делу.')
 
@@ -68,11 +73,27 @@ def llm_reply(user_id, text):
     msgs += [{'role': r['role'], 'text': r['text']} for r in reversed(hist)]
     msgs.append({'role': 'user', 'text': text})
 
+    if OPENAI_API_KEY:
+        try:
+            import requests
+            r = requests.post(
+                OPENAI_BASE_URL.rstrip('/') + '/chat/completions',
+                headers={'Authorization': 'Bearer ' + OPENAI_API_KEY},
+                json={'model': OPENAI_MODEL,
+                      'messages': [{'role': m['role'], 'content': m['text']}
+                                   for m in msgs],
+                      'temperature': 0.5, 'max_tokens': 1000,
+                      'stream': False}, timeout=60)
+            r.raise_for_status()
+            return r.json()['choices'][0]['message']['content']
+        except Exception as e:
+            return 'Ошибка обращения к модели: %s' % e
     if not (YANDEX_API_KEY and YANDEX_FOLDER):
         time.sleep(0.4)
-        return ('[эхо-режим, ключи Yandex не заданы] Принял: «%s». '
-                'После подключения YANDEX_API_KEY/YANDEX_FOLDER_ID здесь будут '
-                'ответы модели %s с учётом истории диалога.' % (text[:200], YANDEX_MODEL))
+        return ('[эхо-режим, ключи модели не заданы] Принял: «%s». '
+                'После подключения OPENAI_API_KEY или YANDEX_API_KEY/'
+                'YANDEX_FOLDER_ID здесь будут ответы модели %s с учётом '
+                'истории диалога.' % (text[:200], YANDEX_MODEL))
     try:
         import requests
         r = requests.post(

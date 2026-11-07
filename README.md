@@ -33,6 +33,16 @@ python app.py          # -> http://127.0.0.1:5000
 Default admin: `admin` / `admin123` — change via `ADMIN_PASSWORD` env var
 (see `.env.example`).
 
+### Docker
+
+```bash
+docker build -t ai-assistant-service .
+docker run -d -p 5000:5000 --env-file .env -v $(pwd)/data:/app/data ai-assistant-service
+```
+
+Or `docker compose up -d` (see `docker-compose.yml`). The SQLite database
+persists in `./data`.
+
 ## Configuration
 
 Copy `.env.example` to `.env` or export the variables:

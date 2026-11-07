@@ -18,7 +18,7 @@ from flask import (Flask, request, session, redirect, jsonify,
                    render_template_string, abort, g)
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-DB = os.path.join(APP_DIR, 'assist.db')
+DB = os.environ.get('DATABASE', os.path.join(APP_DIR, 'assist.db'))
 
 YANDEX_API_KEY  = os.environ.get('YANDEX_API_KEY', '')
 YANDEX_FOLDER   = os.environ.get('YANDEX_FOLDER_ID', '')

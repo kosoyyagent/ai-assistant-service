@@ -73,7 +73,7 @@ def llm_reply(user_id, text):
         "SELECT role,text FROM messages WHERE user_id=? ORDER BY id DESC LIMIT 20",
         (user_id,)).fetchall()
     msgs = [{'role': 'system', 'text': SYSTEM_PROMPT}]
-    msgs += [{'role': r['role'], 'text': r['text']} for r in reversed(hist)]
+    msgs += [{'role': {'u': 'user', 'a': 'assistant'}.get(r['role'], r['role']), 'text': r['text']} for r in reversed(hist)]
     msgs.append({'role': 'user', 'text': text})
 
     if OPENAI_API_KEY:

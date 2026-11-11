@@ -90,7 +90,8 @@ def llm_reply(user_id, text):
             r.raise_for_status()
             return r.json()['choices'][0]['message']['content']
         except Exception as e:
-            return 'Ошибка обращения к модели: %s' % e
+            body = getattr(getattr(e, 'response', None), 'text', '') or ''
+            return 'Ошибка обращения к модели: %s %s' % (e, body[:300])
     if not (YANDEX_API_KEY and YANDEX_FOLDER):
         time.sleep(0.4)
         return ('[эхо-режим, ключи модели не заданы] Принял: «%s». '

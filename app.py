@@ -59,8 +59,11 @@ def init_db():
       created_at TEXT DEFAULT (datetime('now')));
     """)
     if not d.execute("SELECT 1 FROM users WHERE login='admin'").fetchone():
-        d.execute("INSERT INTO users(login,pwd,is_admin) VALUES('admin',?,1)",
-                  (os.environ.get('ADMIN_PASSWORD', 'admin123'),))
+        try:
+            d.execute("INSERT INTO users(login,pwd,is_admin) VALUES('admin',?,1)",
+                      (os.environ.get('ADMIN_PASSWORD', 'admin123'),))
+        except sqlite3.IntegrityError:
+            pass
     d.commit(); d.close()
 
 
@@ -270,6 +273,7 @@ def admin_dialog(uid):
     return render_template_string(DIALOG, u=u, msgs=msgs)
 
 
+init_db()
+
 if __name__ == '__main__':
-    init_db()
-    app.run(host='127.0.0.1', port=5000)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
